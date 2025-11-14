@@ -1,4 +1,5 @@
 const Event = require('../models/Event');
+const EventLog = require('../models/EventLog');
 
 // @desc    Get all events
 // @route   GET /api/events
@@ -56,6 +57,15 @@ const createEvent = async (req, res) => {
         });
 
         const event = await newEvent.save();
+
+        // Log event creation
+        await EventLog.create({
+            event: event._id,
+            user: req.user.id,
+            action: 'create',
+            changes: event.toObject() // Log the entire event object on creation
+        });
+
         res.status(201).json(event);
     } catch (err) {
         console.error(err.message);
@@ -97,6 +107,17 @@ const updateEvent = async (req, res) => {
             });
         }
 
+        // Capture changes for logging
+        const changes = {};
+        for (const key in eventFields) {
+            if (event[key] !== eventFields[key]) {
+                changes[key] = {
+                    oldValue: event[key],
+                    newValue: eventFields[key]
+                };
+            }
+        }
+
         event = await Event.findByIdAndUpdate(
             req.params.id,
             {
@@ -106,6 +127,16 @@ const updateEvent = async (req, res) => {
                 new: true
             }
         );
+
+        // Log event update if changes were made
+        if (Object.keys(changes).length > 0) {
+            await EventLog.create({
+                event: event._id,
+                user: req.user.id,
+                action: 'update',
+                changes: changes
+            });
+        }
 
         res.json(event);
     } catch (err) {
@@ -136,9 +167,30 @@ const deleteEvent = async (req, res) => {
 
         await Event.findByIdAndDelete(req.params.id);
 
+        // Log event deletion
+        await EventLog.create({
+            event: event._id,
+            user: req.user.id,
+            action: 'delete',
+            changes: { eventTitle: event.title } // Log relevant info for deletion
+        });
+
         res.json({
             msg: 'Event removed'
         });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Get event logs by event ID
+// @route   GET /api/events/:id/logs
+// @access  Private
+const getEventLogs = async (req, res) => {
+    try {
+        const eventLogs = await EventLog.find({ event: req.params.id }).populate('user', ['name', 'email']).sort({ timestamp: -1 });
+        res.json(eventLogs);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -150,5 +202,6 @@ module.exports = {
     getEventById,
     createEvent,
     updateEvent,
-    deleteEvent
+    deleteEvent,
+    getEventLogs
 };

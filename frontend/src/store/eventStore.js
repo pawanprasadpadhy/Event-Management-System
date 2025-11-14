@@ -6,6 +6,7 @@ const useEventStore = create((set, get) => ({
     event: null,
     loading: false,
     error: null,
+    eventLogs: [],
 
     getEvents: async () => {
         set({ loading: true, error: null });
@@ -78,6 +79,16 @@ const useEventStore = create((set, get) => ({
             set({ error: err.response.data.msg, loading: false });
         }
     },
+
+    getEventLogs: async (id) => {
+        set({ loading: true, error: null });
+        try {
+            const res = await axios.get(`/api/events/${id}/logs`);
+            set({ eventLogs: res.data, loading: false });
+        } catch (err) {
+            set({ error: err.response.data.msg, loading: false });
+        }
+    }
 }));
 
 export default useEventStore;

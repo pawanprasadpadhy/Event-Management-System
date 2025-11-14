@@ -4,6 +4,7 @@ import useEventStore from '../store/eventStore';
 import { formatEventDate } from '../utils/timezoneHelpers';
 import EventForm from '../components/EventForm';
 import useUserStore from '../store/userStore';
+import EventLogDisplay from '../components/EventLogDisplay';
 
 const EventDetailsPage = () => {
     const { id } = useParams();
@@ -34,6 +35,7 @@ const EventDetailsPage = () => {
                     <button onClick={() => setIsEditing(true)}>Edit Event</button>
                 </>
             )}
+            <EventLogDisplay eventId={event._id} />
         </div>
     );
 };
