@@ -17,3 +17,20 @@ yarn-error.log*
 .env
 .idea
 .vscode
+
+# Root level files/directories
+/node_modules
+/package-lock.json
+/package.json
+/setup.sh
+/src
+
+# Frontend files/directories that are not ignored by frontend/.gitignore
+frontend/public/
+frontend/src/App.css
+frontend/src/App.test.js
+frontend/src/index.css
+frontend/src/index.js
+frontend/src/logo.svg
+frontend/src/reportWebVitals.js
+frontend/src/setupTests.js
