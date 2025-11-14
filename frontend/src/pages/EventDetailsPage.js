@@ -3,10 +3,12 @@ import { useParams } from 'react-router-dom';
 import useEventStore from '../store/eventStore';
 import { formatEventDate } from '../utils/timezoneHelpers';
 import EventForm from '../components/EventForm';
+import useUserStore from '../store/userStore';
 
 const EventDetailsPage = () => {
     const { id } = useParams();
     const { event, getEventById, loading, error } = useEventStore();
+    const { selectedTimeZone } = useUserStore();
     const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
@@ -25,7 +27,7 @@ const EventDetailsPage = () => {
             ) : (
                 <>
                     <p><strong>Description:</strong> {event.description}</p>
-                    <p><strong>Date:</strong> {formatEventDate(event.date)}</p>
+                    <p><strong>Date:</strong> {formatEventDate(event.date, selectedTimeZone)}</p>
                     <p><strong>Location:</strong> {event.location}</p>
                     <p><strong>Category:</strong> {event.category}</p>
                     {event.user && <p><strong>Created By:</strong> {event.user.name}</p>}
