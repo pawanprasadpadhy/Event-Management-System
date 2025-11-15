@@ -1,87 +1,40 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useProfileStore from '../store/profileStore';
 
 const ProfileForm = () => {
-    const { profile, createProfile, updateProfile, getProfile } = useProfileStore();
-    const [formData, setFormData] = useState({
-        bio: '',
-        website: '',
-        youtube: '',
-        twitter: '',
-        facebook: '',
-        linkedin: '',
-        instagram: ''
-    });
+    const { createProfile, loading, error } = useProfileStore();
+    const [name, setName] = useState('');
+    const [success, setSuccess] = useState(false);
 
-    useEffect(() => {
-        getProfile();
-    }, [getProfile]);
-
-    useEffect(() => {
-        if (profile) {
-            setFormData({
-                bio: profile.bio || '',
-                website: profile.website || '',
-                youtube: profile.social?.youtube || '',
-                twitter: profile.social?.twitter || '',
-                facebook: profile.social?.facebook || '',
-                linkedin: profile.social?.linkedin || '',
-                instagram: profile.social?.instagram || ''
-            });
-        }
-    }, [profile]);
-
-    const { bio, website, youtube, twitter, facebook, linkedin, instagram } = formData;
-
-    const onChange = e =>
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-
-    const onSubmit = e => {
+    const onSubmit = async (e) => {
         e.preventDefault();
-        if (profile) {
-            updateProfile(formData);
-        } else {
-            createProfile(formData);
-        }
+        if (!name.trim()) return;
+        await createProfile({ name });
+        setName('');
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 1500);
     };
 
     return (
         <div className="profile-form">
-            <h2>{profile ? 'Edit Your Profile' : 'Create Your Profile'}</h2>
+            <h2>Create New Profile</h2>
             <form onSubmit={onSubmit}>
                 <div>
-                    <label>Bio:</label>
-                    <textarea placeholder="A short bio of yourself" name="bio" value={bio} onChange={onChange}></textarea>
+                    <label>Profile name:</label>
+                    <input
+                        type="text"
+                        placeholder="Profile name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                    />
                 </div>
-                <div>
-                    <label>Website:</label>
-                    <input type="text" placeholder="Website" name="website" value={website} onChange={onChange} />
-                </div>
-                <div>
-                    <label>YouTube URL:</label>
-                    <input type="text" placeholder="YouTube URL" name="youtube" value={youtube} onChange={onChange} />
-                </div>
-                <div>
-                    <label>Twitter URL:</label>
-                    <input type="text" placeholder="Twitter URL" name="twitter" value={twitter} onChange={onChange} />
-                </div>
-                <div>
-                    <label>Facebook URL:</label>
-                    <input type="text" placeholder="Facebook URL" name="facebook" value={facebook} onChange={onChange} />
-                </div>
-                <div>
-                    <label>LinkedIn URL:</label>
-                    <input type="text" placeholder="LinkedIn URL" name="linkedin" value={linkedin} onChange={onChange} />
-                </div>
-                <div>
-                    <label>Instagram URL:</label>
-                    <input type="text" placeholder="Instagram URL" name="instagram" value={instagram} onChange={onChange} />
-                </div>
-                <button type="submit">{profile ? 'Update Profile' : 'Create Profile'}</button>
+                <button type="submit" disabled={loading}>
+                    {loading ? 'Creating...' : 'Add Profile'}
+                </button>
             </form>
+            {success && <p style={{ color: 'green', marginTop: 10 }}>Profile created!</p>}
+            {error && <p style={{ color: 'red', marginTop: 10 }}>{error}</p>}
         </div>
     );
 };
