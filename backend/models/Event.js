@@ -1,9 +1,21 @@
 const mongoose = require('mongoose');
 
 const eventSchema = new mongoose.Schema({
-    user: {
+    profiles: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Profile',
+        required: true
+    }],
+    timezone: {
+        type: String,
+        required: true
+    },
+    start: {
+        type: Date,
+        required: true
+    },
+    end: {
+        type: Date,
         required: true
     },
     title: {
@@ -14,10 +26,6 @@ const eventSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    date: {
-        type: Date,
-        required: true
-    },
     location: {
         type: String,
         required: true
@@ -25,11 +33,7 @@ const eventSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true
-    },
-    attendees: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }]
+    }
 }, {
     timestamps: true
 });

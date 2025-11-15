@@ -1,81 +1,34 @@
 const Profile = require('../models/Profile');
 
-// @desc    Get user profile
+// @desc    Get all profiles
 // @route   GET /api/profile
-// @access  Private
-const getProfile = async (req, res) => {
+// @access  Public
+const getProfiles = async (req, res) => {
     try {
-        const profile = await Profile.findOne({
-            user: req.user.id
-        }).populate('user', ['name', 'email']);
-
-        if (!profile) {
-            return res.status(404).json({
-                msg: 'Profile not found'
-            });
-        }
-
-        res.json(profile);
+        const profiles = await Profile.find();
+        res.json(profiles);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
     }
 };
 
-// @desc    Create or update user profile
+// @desc    Create new profile by name
 // @route   POST /api/profile
-// @access  Private
+// @access  Public
 const createProfile = async (req, res) => {
-    const {
-        bio,
-        website,
-        youtube,
-        twitter,
-        facebook,
-        linkedin,
-        instagram
-    } = req.body;
-
-    // Build profile object
-    const profileFields = {};
-    profileFields.user = req.user.id;
-    if (bio) profileFields.bio = bio;
-    if (website) profileFields.website = website;
-
-    // Build social object
-    profileFields.social = {};
-    if (youtube) profileFields.social.youtube = youtube;
-    if (twitter) profileFields.social.twitter = twitter;
-    if (facebook) profileFields.social.facebook = facebook;
-    if (linkedin) profileFields.social.linkedin = linkedin;
-    if (instagram) profileFields.social.instagram = instagram;
-
+    const { name } = req.body;
+    if (!name) {
+        return res.status(400).json({ msg: 'Profile name is required' });
+    }
     try {
-        let profile = await Profile.findOne({
-            user: req.user.id
-        });
-
-        if (profile) {
-            // Update
-            profile = await Profile.findOneAndUpdate(
-                {
-                    user: req.user.id
-                },
-                {
-                    $set: profileFields
-                },
-                {
-                    new: true
-                }
-            );
-
-            return res.json(profile);
+        let existing = await Profile.findOne({ name });
+        if (existing) {
+            return res.status(400).json({ msg: 'Profile name already exists' });
         }
-
-        // Create
-        profile = new Profile(profileFields);
+        const profile = new Profile({ name });
         await profile.save();
-        res.json(profile);
+        res.status(201).json(profile);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -83,6 +36,6 @@ const createProfile = async (req, res) => {
 };
 
 module.exports = {
-    getProfile,
+    getProfiles,
     createProfile
 };
